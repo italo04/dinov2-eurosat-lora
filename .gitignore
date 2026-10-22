@@ -1,0 +1,11 @@
+# Datos (se descargan con el notebook; no subir al repositorio)
+data/
+*.zip
+# Cache de embeddings (pesado y regenerable)
+results/features_cache*.pt
+# Entornos y archivos temporales
+.venv/
+__pycache__/
+.ipynb_checkpoints/
+*.pyc
+.DS_Store

@@ -1,0 +1,11 @@
+# Probado con Python 3.10+ (Colab). Fijar versiones exactas tras la primera ejecución con:
+#   pip freeze > requirements-lock.txt
+torch>=2.1
+torchvision>=0.16
+transformers>=4.40
+scikit-learn>=1.3
+pandas>=2.0
+matplotlib>=3.7
+tqdm>=4.65
+pillow>=10.0
+notebook>=7.0
