@@ -1,0 +1,2 @@
+img_size,tokens,GFLOPs_total_medido,GFLOPs_total_analitico,GFLOPs_por_bloque_medido,GFLOPs_por_bloque_analitico,GFLOPs_atencion_cuadratica_por_bloque,convencion
+224,257,12.25,12.25,1.011,1.011,0.101,1 MAC = 2 FLOPs; atencion eager

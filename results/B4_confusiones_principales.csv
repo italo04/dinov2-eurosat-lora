@@ -1,0 +1,8 @@
+real,predicho,base,lora
+River,Highway,21,2
+Highway,River,7,6
+PermanentCrop,AnnualCrop,13,9
+HerbaceousVegetation,PermanentCrop,12,2
+Pasture,AnnualCrop,2,10
+Pasture,HerbaceousVegetation,7,12
+PermanentCrop,HerbaceousVegetation,1,13

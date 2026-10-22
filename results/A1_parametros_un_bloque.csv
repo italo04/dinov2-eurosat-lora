@@ -1,0 +1,5 @@
+componente,parametros
+"atencion (Q,K,V,salida)",591360
+"mlp (fc1,fc2)",1181568
+normas,1536
+layerscale,768

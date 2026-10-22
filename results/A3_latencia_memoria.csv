@@ -1,0 +1,7 @@
+batch,precision,ms_por_batch,ms_por_imagen,imagenes_por_s,memoria_pico_MB,device
+1,fp32,8.89,8.89,112.46,187.1,Tesla T4
+32,fp32,121.48,3.8,263.41,343.96,Tesla T4
+128,fp32,492.99,3.85,259.64,833.27,Tesla T4
+1,fp16,39.47,39.47,25.33,186.04,Tesla T4
+32,fp16,39.97,1.25,800.65,295.77,Tesla T4
+128,fp16,149.94,1.17,853.7,640.52,Tesla T4
