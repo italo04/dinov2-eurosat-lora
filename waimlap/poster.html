@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Poster - WAIMLAp 2026: DINOv2 EuroSAT LoRA Teardown</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+          onload="renderMathInElement(document.body);"></script>
+  <style>
+    @page {
+      size: 841mm 1189mm;
+      margin: 0;
+    }
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: 'Times New Roman', Times, serif, 'Segoe UI', -apple-system;
+      background: #0f172a;
+      color: #1e293b;
+      display: flex;
+      justify-content: center;
+      padding: 20px;
+    }
+    .poster-container {
+      width: 841mm;
+      min-height: 1189mm;
+      height: 1189mm;
+      background: #f8fafc;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+    }
+    /* Header */
+    .poster-header {
+      background: linear-gradient(135deg, #090d16 0%, #1e3a8a 50%, #047857 100%);
+      color: #fff;
+      padding: 24mm 28mm 18mm 28mm;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+      position: relative;
+    }
+    .workshop-tag {
+      font-size: 14pt;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: #93c5fd;
+      font-weight: 700;
+      margin-bottom: 8mm;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    .poster-title {
+      font-size: 34pt;
+      font-weight: 800;
+      line-height: 1.25;
+      max-width: 780mm;
+      color: #ffffff;
+      margin-bottom: 8mm;
+    }
+    .poster-authors {
+      font-size: 20pt;
+      font-weight: 700;
+      color: #e0e7ff;
+      margin-bottom: 3mm;
+    }
+    .poster-affiliations {
+      font-size: 14pt;
+      color: #cbd5e1;
+    }
+
+    /* 2-Column Grid Layout */
+    .poster-body {
+      flex: 1;
+      padding: 16mm 22mm;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16mm;
+      align-content: start;
+    }
+
+    .column {
+      display: flex;
+      flex-direction: column;
+      gap: 12mm;
+    }
+
+    .card {
+      background: #ffffff;
+      border-radius: 8mm;
+      border: 1.5px solid #cbd5e1;
+      box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card-header {
+      background: #0f172a;
+      color: #ffffff;
+      padding: 5mm 8mm;
+      font-size: 14.5pt;
+      font-weight: 700;
+      letter-spacing: 1px;
+      display: flex;
+      align-items: center;
+      gap: 3mm;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    .card-header.emerald { background: #065f46; }
+    .card-header.blue { background: #1e3a8a; }
+
+    .card-content {
+      padding: 7mm 8mm;
+      font-size: 13.5pt;
+      line-height: 1.45;
+      color: #334155;
+      display: flex;
+      flex-direction: column;
+      gap: 3.5mm;
+    }
+
+    .card-content p, .card-content li {
+      margin-bottom: 2mm;
+    }
+
+    .card-content ul {
+      padding-left: 6mm;
+    }
+
+    .highlight-box {
+      background: #f1f5f9;
+      border-left: 4px solid #1e3a8a;
+      padding: 3.5mm 5mm;
+      border-radius: 2mm;
+      font-weight: 500;
+    }
+    .highlight-box.green {
+      background: #f0fdf4;
+      border-left: 4px solid #059669;
+    }
+
+    .fig-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 4mm;
+      padding: 2.5mm;
+      margin-top: 2mm;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    }
+    .fig-container img {
+      width: 100%;
+      height: auto;
+      max-height: 105mm;
+      object-fit: contain;
+      border-radius: 2mm;
+    }
+    .fig-caption {
+      font-size: 10pt;
+      color: #64748b;
+      margin-top: 2mm;
+      text-align: center;
+      font-style: italic;
+    }
+
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 4mm;
+      margin-top: 2mm;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    .kpi-card {
+      background: #f8fafc;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 4mm;
+      padding: 4mm;
+      text-align: center;
+    }
+    .kpi-val {
+      font-size: 22pt;
+      font-weight: 800;
+      color: #0f172a;
+    }
+    .kpi-val.green { color: #059669; }
+    .kpi-lbl {
+      font-size: 9.5pt;
+      color: #64748b;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .clean-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 2mm;
+      font-size: 11pt;
+    }
+    .clean-table th {
+      background: #0f172a;
+      color: #ffffff;
+      padding: 2mm 3mm;
+      text-align: center;
+      font-weight: 700;
+    }
+    .clean-table td {
+      padding: 2mm 3mm;
+      border-bottom: 1px solid #e2e8f0;
+      text-align: center;
+    }
+    .clean-table tr:nth-child(even) { background: #f8fafc; }
+    .clean-table tr:nth-child(odd) { background: #f0fdf4; }
+
+    /* Footer Banner */
+    .poster-footer {
+      background: #0f172a;
+      color: #94a3b8;
+      padding: 6mm 28mm;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11.5pt;
+      border-top: 2px solid #334155;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    .poster-footer strong {
+      color: #ffffff;
+    }
+
+    @media print {
+      body {
+        padding: 0;
+        background: transparent;
+      }
+      .poster-container {
+        box-shadow: none;
+        width: 841mm;
+        height: 1189mm;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="poster-container">
+
+  <!-- HEADER -->
+  <header class="poster-header">
+    <div class="workshop-tag">Workshop on Artificial Intelligence and Machine Learning Applications (WAIMLAp 2026)</div>
+    <h1 class="poster-title">Dissecting and Adapting DINOv2 for Land Cover Classification:<br>An Architectural Teardown & Parameter-Efficient Study on Sentinel-2 Imagery</h1>
+    <div class="poster-authors">Alfredo Jimenez &nbsp;•&nbsp; Jhonatan Davila &nbsp;•&nbsp; Italo Perez</div>
+    <div class="poster-affiliations">
+      Grupo de Investigación en Inteligencia Artificial (IA-PUCP) &nbsp;|&nbsp; Departamento de Ingeniería, Pontificia Universidad Católica del Perú (PUCP) &nbsp;|&nbsp; <code>italo.perez@pucp.edu.pe</code>
+    </div>
+  </header>
+
+  <!-- BODY: 2 COLUMNS -->
+  <main class="poster-body">
+
+    <!-- LEFT COLUMN -->
+    <div class="column">
+
+      <!-- CARD 1: MOTIVATION -->
+      <section class="card">
+        <div class="card-header blue">
+          <span>01</span> MOTIVATION & RESEARCH PROBLEM
+        </div>
+        <div class="card-content">
+          <p><strong>Foundation Model Paradigm:</strong> Large self-supervised Vision Transformers like Meta AI's DINOv2 acquire robust visual features from web-scale natural photography.</p>
+          <p><strong>The Remote Sensing Domain Shift:</strong> Satellite imagery (Sentinel-2 EuroSAT) presents unique challenges: nadir perspectives, multi-scale spatial textures, absence of focal foreground objects, and subtle inter-class spectral boundaries.</p>
+          <div class="highlight-box">
+            <strong>Core Question:</strong> Can low-rank adaptation confined strictly to late self-attention layers adapt DINOv2 to satellite land cover with minimal parameter overhead and zero catastrophic forgetting?
+          </div>
+          <div class="fig-container">
+            <img src="figures/00_muestras.png" alt="EuroSAT Dataset Samples">
+            <div class="fig-caption">Figure 1: EuroSAT Sentinel-2 RGB multi-spectral tiles across 10 land cover categories (27,000 images).</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- CARD 3: METHODOLOGY -->
+      <section class="card">
+        <div class="card-header">
+          <span>02</span> METHODOLOGY & ARCHITECTURAL TEARDOWN
+        </div>
+        <div class="card-content">
+          <p><strong>Phase A — Teardown of ViT-S/14:</strong> 22,056,576 parameters, 12 transformer encoder blocks ($d=384, h=6, \text{MLP}=1536$). Forward cost: 12.25 GFLOPs. Tesla T4 latency: 8.89 ms (fp32) and 1.17 ms (fp16, 853.7 img/s).</p>
+          <div class="highlight-box">
+            <strong>Phase B — Nucleus Intervention (LoRA):</strong> Freeze blocks 0–10. Inject low-rank matrices into Query ($Q$) and Value ($V$) projections of blocks 11 and 12:
+            $$W = W_0 + \frac{\alpha}{r}(B \cdot A), \quad r=8, \alpha=8, \quad B \in \mathbb{R}^{384 \times 8},\ A \in \mathbb{R}^{8 \times 384}$$
+            Only <strong>32,266 trainable parameters</strong> (0.146% of backbone).
+          </div>
+          <p><strong>Representation Caching:</strong> Precomputing frozen representations through block 10 preserves strict equivalence and slashes training time from ~8 minutes to 61 seconds on full EuroSAT.</p>
+          <div style="display: flex; flex-direction: column; gap: 3mm;">
+            <div class="fig-container">
+              <img src="figures/A1_parametros.png" alt="Parameters by block">
+              <div class="fig-caption">Figure 2: Parameters per block in DINOv2 ViT-S/14 (MLP 67% vs Attention 33%).</div>
+            </div>
+            <div class="fig-container">
+              <img src="figures/A2_flops.png" alt="FLOPs by block">
+              <div class="fig-caption">Figure 3: GFLOPs per block at 224px (1.011 GFLOPs per block, attention is 9.9%).</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- CARD 5: CONCLUSIONS & HONESTY -->
+      <section class="card">
+        <div class="card-header emerald">
+          <span>03</span> CONCLUSIONS & EPISTEMOLOGICAL HONESTY
+        </div>
+        <div class="card-content">
+          <ul>
+            <li><strong>Core Finding:</strong> LoRA on late self-attention heads is highly effective for satellite adaptation, beating frozen features with <strong>97.14% Macro-F1</strong> ($p = 0.002$) with only 0.146% trainable parameters.</li>
+            <li><strong>Representation Caching:</strong> Enables exact mathematical acceleration with zero degradation and zero runtime latency penalty upon merging.</li>
+            <li><strong>Epistemological Honesty:</strong> Random stratified partitioning (seed 42) evaluates intra-distribution fit but does not measure spatial autocorrelation across geographic scenes.</li>
+            <li><strong>Phase C Roadmap:</strong> Geographic cross-validation on disjoint regional biomes (EuroSAT GeoTIFFs) and cross-sensor evaluation with Sentinel-1 SAR imagery.</li>
+          </ul>
+          <div class="fig-container">
+            <img src="figures/A5_erf.png" alt="ERF Progression">
+            <div class="fig-caption">Figure 4: Effective Receptive Field (ERF) expansion from Block 1 (r50=69.4 px) to Block 12 (r50=85.0 px).</div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- RIGHT COLUMN -->
+    <div class="column">
+
+      <!-- CARD 2: OBJECTIVES -->
+      <section class="card">
+        <div class="card-header">
+          <span>04</span> KEY OBJECTIVES & CONTRIBUTIONS
+        </div>
+        <div class="card-content">
+          <ul>
+            <li><strong>Full Architectural Dissection:</strong> Layer-by-layer FLOPs, parameter profiling, and empirical validation of attention dynamics on Tesla T4.</li>
+            <li><strong>Targeted Nucleus Adaptation:</strong> Resolving infrastructure and hydrological ambiguity ($r=8$ LoRA on blocks 11–12).</li>
+            <li><strong>Statistically Validated Uplift:</strong> Evaluated across all 27,000 images with 4,050 test samples (McNemar test $p = 0.002$).</li>
+          </ul>
+          <div class="kpi-row">
+            <div class="kpi-card">
+              <div class="kpi-val">22.06M</div>
+              <div class="kpi-lbl">Total Params</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-val green">0.146%</div>
+              <div class="kpi-lbl">LoRA Budget</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-val green">97.14%</div>
+              <div class="kpi-lbl">Macro-F1 (Test)</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- CARD 4: RESULTS & DISCUSSION -->
+      <section class="card">
+        <div class="card-header emerald">
+          <span>05</span> EXPERIMENTAL RESULTS & DISCUSSION
+        </div>
+        <div class="card-content">
+          <p><strong>Quantitative Benchmarks:</strong> LoRA reaches <strong>97.14% Test Macro-F1</strong> and <strong>97.28% Accuracy</strong> on 4,050 test images, outperforming the Linear Probe Baseline (95.80% / 96.00%) with $p=0.002$.</p>
+          <div class="highlight-box green">
+            <strong>Major Infrastructure & Hydrology Gains:</strong>
+            <em>Highway</em> F1 jumps from <strong>91.87% to 97.72% (+5.85%)</strong> and <em>River</em> rises from <strong>93.80% to 97.51% (+3.71%)</strong>, while high-performing categories (Forest 98.89%, SeaLake 99.44%) maintain peak fidelity.
+          </div>
+          <div class="fig-container">
+            <img src="figures/B1_confusion_y_curvas.png" alt="Confusion Matrix and Curves">
+            <div class="fig-caption">Figure 5: Confusion matrices (Baseline 95.80% vs LoRA 97.14%) and validation learning curves over 8 epochs.</div>
+          </div>
+          <table class="clean-table">
+            <thead>
+              <tr>
+                <th>Condition</th>
+                <th>Trainable Params</th>
+                <th>Test Accuracy</th>
+                <th>Test Macro-F1</th>
+                <th>Test Errors</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="text-align: left; font-weight: bold;">Linear Probing (Frozen)</td>
+                <td>7,690 (0.035%)</td>
+                <td>96.00%</td>
+                <td>95.80%</td>
+                <td>162 / 4,050</td>
+              </tr>
+              <tr style="font-weight: bold; color: #047857;">
+                <td style="text-align: left;">DINOv2 + LoRA (Bl. 11-12)</td>
+                <td>32,266 (0.146%)</td>
+                <td>97.28%</td>
+                <td>97.14% (+1.34%)</td>
+                <td>110 / 4,050</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- CARD 6: REFERENCES -->
+      <section class="card">
+        <div class="card-header">
+          <span>06</span> KEY REFERENCES
+        </div>
+        <div class="card-content" style="font-size: 11pt;">
+          <p>[1] M. Oquab et al., "DINOv2: Learning Robust Visual Features without Supervision," <em>arXiv:2304.07193</em>, 2023.</p>
+          <p>[2] E. J. Hu et al., "LoRA: Low-Rank Adaptation of Large Language Models," in <em>Proc. ICLR</em>, 2022.</p>
+          <p>[3] P. Helber et al., "EuroSAT: A Novel Dataset and Deep Learning Benchmark for Land Cover Classification," <em>IEEE JSTARS</em>, 2019.</p>
+          <p>[4] W. Luo et al., "Understanding the Effective Receptive Field in Deep Convolutional Neural Networks," in <em>Proc. NeurIPS</em>, 2016.</p>
+        </div>
+      </section>
+
+      <!-- CARD 7 & 8: ACKNOWLEDGMENTS & CONTACT -->
+      <section class="card">
+        <div class="card-header blue">
+          <span>07</span> ACKNOWLEDGMENTS & REPRODUCIBILITY
+        </div>
+        <div class="card-content">
+          <p><strong>Course & Institution:</strong> Deep Learning (1INF52) 2026-2, Pontificia Universidad Católica del Perú (PUCP). Lead Instructor: Dr. César A. Beltrán Castañón. Supported by IA-PUCP Research Group.</p>
+          <div class="highlight-box">
+            <strong>Open-Source Repository & Artifacts:</strong><br>
+            All code, notebooks, checkpoints, and design logs are reproducible:<br>
+            <span style="font-family: monospace; font-size: 13pt; font-weight: 700; color: #1e3a8a;">github.com/jflxx/deep-learning</span>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="poster-footer">
+    <div><strong>BRING YOUR RESEARCH. SHARE YOUR IDEAS. JOIN THE CONVERSATION.</strong></div>
+    <div>WAIMLAp 2026 &nbsp;•&nbsp; November 18–20, 2026 &nbsp;•&nbsp; Lima, Peru &nbsp;•&nbsp; <strong>waimlap.org</strong></div>
+  </footer>
+
+</div>
+
+</body>
+</html>

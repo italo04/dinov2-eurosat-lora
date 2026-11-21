@@ -1,0 +1,35 @@
+{
+  "base": {
+    "test_accuracy": 0.96,
+    "test_macro_f1": 0.958,
+    "errores": 162
+  },
+  "lora": {
+    "test_accuracy": 0.9728,
+    "test_macro_f1": 0.9714,
+    "errores": 110
+  },
+  "delta_macro_f1_puntos": 1.33,
+  "mcnemar_peor_caso": {
+    "b_menos_c": 52,
+    "b_mas_c_max": 272,
+    "chi2_con_correccion": 9.56,
+    "p": 0.002,
+    "nota": "Peor caso posible sin las predicciones pareadas; solo considera la variabilidad del conjunto de test, no la de entrenamiento (una sola semilla)."
+  },
+  "config": {
+    "epocas": 8,
+    "lr": 0.001,
+    "weight_decay": 0.0001,
+    "batch": 64,
+    "lora_rango": 8,
+    "lora_alpha": 8,
+    "lora_bloques_1indexados": [
+      11,
+      12
+    ],
+    "max_por_clase": null,
+    "img_size": 224
+  },
+  "_nota": "Reconstruido a partir de las salidas impresas del notebook ejecutado en Colab (Tesla T4, 21/10/2026); valores redondeados como en la salida."
+}

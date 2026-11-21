@@ -1,0 +1,3 @@
+condicion,parametros_entrenables,test_accuracy,test_macro_f1,errores_test,segundos_entrenamiento,mejor_epoca_val
+linear probing (DINOv2 congelado),7690,0.96,0.958,162,64,6
+"LoRA r=8 Q,V bloques [11,12]",32266,0.9728,0.9714,110,454,7

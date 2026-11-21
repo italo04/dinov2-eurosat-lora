@@ -1,0 +1,4 @@
+modelo,batch,ms_por_imagen,memoria_pico_MB
+base,32,4.43,402.65
+LoRA sin fusionar,32,4.35,402.81
+LoRA fusionado,32,4.41,402.65

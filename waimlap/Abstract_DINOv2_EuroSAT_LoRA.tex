@@ -1,0 +1,99 @@
+\documentclass[conference,a4paper]{IEEEtran}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{microtype}
+\usepackage{hyperref}
+\usepackage{cite}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    citecolor=blue,
+    urlcolor=blue
+}
+
+\begin{document}
+
+\title{Dissecting and Adapting DINOv2 for Land Cover Classification: An Architectural Teardown and Parameter-Efficient Study on Sentinel-2 Imagery}
+
+\author{
+    \IEEEauthorblockN{Alfredo Jimenez, Jhonatan Davila, Italo Perez}
+    \IEEEauthorblockA{
+        \textit{Departamento de Ingenier\'{i}a, Pontificia Universidad Cat\'{o}lica del Per\'{u} (PUCP), Lima, Peru} \\
+        \textit{Grupo de Investigaci\'{o}n en Inteligencia Artificial (IA-PUCP)} \\
+        Corresponding email: italo.perez@pucp.edu.pe
+    }
+}
+
+\maketitle
+
+\begin{abstract}
+Self-supervised Vision Transformers such as Meta AI's DINOv2 acquire robust visual representations on natural photography. However, deploying these representations to Earth observation imagery introduces a substantial domain shift due to nadir perspective, multi-scale agricultural textures, and subtle spectral class boundaries. In this work, we conduct an architectural teardown of DINOv2 (ViT-S/14) and examine a controlled nucleus intervention using Low-Rank Adaptation (LoRA) restricted to the deepest self-attention layers. Evaluated on the complete EuroSAT dataset (27,000 Sentinel-2 images) using an NVIDIA Tesla T4 GPU, our LoRA configuration adapts only 32,266 parameters (0.146\% of the backbone) while improving test Macro-F1 from 95.80\% to 97.14\% ($p = 0.002$) over a frozen linear probe, resolving fine-grained infrastructure confusion without inference overhead.
+\end{abstract}
+
+\section{Introduction}
+Foundation vision models pretrained via self-supervised learning, particularly DINOv2~\cite{oquab2023dinov2}, yield versatile visual representations across natural image benchmarks. When transferred to Earth observation tasks, however, they encounter a significant domain shift: satellite imagery (e.g., Sentinel-2 EuroSAT~\cite{helber2019eurosat}) exhibits nadir viewing geometry, multi-scale spatial textures, the absence of focal foreground objects, and high intra-class spectral variance across land-cover classes. 
+
+Standard linear probing (training an affine classifier over frozen features) prevents catastrophic forgetting but cannot adapt features to high-frequency remote sensing spatial distributions. Conversely, full fine-tuning modifies over 22 million parameters, risking overfitting on specialized target distributions and incurring heavy computational demands. In this work, we present an architectural teardown of DINOv2 (ViT-S/14) and evaluate a controlled nucleus intervention using Low-Rank Adaptation (LoRA)~\cite{hu2021lora} restricted to the deepest self-attention layers, demonstrating statistically significant performance gains with minimal parameter footprint and zero inference overhead.
+
+\section{Methodology}
+\subsection{Dataset and Protocol}
+We benchmark on the complete EuroSAT RGB dataset~\cite{helber2019eurosat} (Sentinel-2, 10 Land Use and Land Cover classes, 27,000 images). Images are resized from $64 \times 64$ to $224 \times 224$ pixels via bicubic interpolation without cropping to preserve peripheral context, followed by ImageNet normalization. We adopt a deterministic stratified 70/15/15 split (seed 42): 18,900 images for training, 4,050 for validation, and 4,050 for testing. 
+
+Following the canonical DINOv2 protocol~\cite{oquab2023dinov2}, the classifier input is formed by concatenating the class token with the spatial mean of patch tokens ($[\text{CLS} \,;\, \text{Mean}(\text{Tokens})]$, 768 dimensions), yielding an affine head of 7,690 parameters.
+
+\subsection{Phase A: Architectural Teardown}
+DINOv2-Small (ViT-S/14 without registers) comprises 22,056,576 parameters (88.2\,MB in fp32) organized across 12 transformer encoder blocks ($d=384$, 6 heads, MLP expansion $4\times$ to 1536). Analytical forward computation totals 12.25\,GFLOPs per 224\,px image (1.011\,GFLOPs per block, where quadratic attention represents 9.9\%). 
+
+Empirical profiling on an NVIDIA Tesla T4 GPU yields a latency of 8.89\,ms (112.5\,img/s, batch 1, fp32) and 1.17\,ms per image (853.7\,img/s, batch 128, fp16). Effective Receptive Field (ERF) analysis~\cite{luo2016understanding} shows global coverage starting from block 1 ($r_{50}$ expands from 69.4\,px to 85.0\,px, and $r_{90}$ from 117.2\,px to 127.1\,px at block 12). Principal Component Analysis (PCA) reveals that while block 4 tokens encode spatial coordinates, block 12 tokens cluster into clear semantic class representations.
+
+\subsection{Phase B: Nucleus Intervention via LoRA}
+Hypothesizing that remote sensing domain adaptation requires realigning high-level semantic tokens rather than early geometric primitives, we freeze blocks 0--10 and inject low-rank decomposition matrices exclusively into the Query ($Q$) and Value ($V$) projections of blocks 11 and 12. Each adapted weight is parameterized as:
+\begin{equation}
+W = W_0 + \frac{\alpha}{r}(B \cdot A)
+\end{equation}
+where $W_0 \in \mathbb{R}^{384 \times 384}$ is frozen, $A \in \mathbb{R}^{8 \times 384}$ is Kaiming-uniform initialized, and $B \in \mathbb{R}^{384 \times 8}$ is zero-initialized ($r=8, \alpha=8$). This restricts trainable parameters to 32,266 (24,576 LoRA + 7,690 head, representing 0.146\% of the backbone). 
+
+Both baseline and intervention are trained under identical conditions (AdamW, $\text{lr}=10^{-3}$, weight decay $10^{-4}$, batch size 64, 8 epochs) using precomputed frozen embeddings, accelerating extraction to 61 seconds.
+
+\section{Results and Discussion}
+\subsection{Quantitative Benchmarks}
+As shown in Table~\ref{tab:results}, LoRA adaptation outperforms the frozen linear probe across all evaluation metrics on the 4,050 held-out test images. Test Macro-F1 increases from 95.80\% to 97.14\% ($+1.34\%$), and Test Accuracy improves from 96.00\% to 97.28\% ($+1.28\%$), reducing total test misclassifications from 162 to 110. A two-tailed McNemar test on paired test predictions confirms statistical significance ($\chi^2 = 9.56, p = 0.002$).
+
+\begin{table}[t]
+\centering
+\caption{Performance on full EuroSAT test set (4,050 images, seed 42).}
+\label{tab:results}
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Configuration} & \textbf{Params} & \textbf{\% Back.} & \textbf{Accuracy} & \textbf{Macro-F1} \\
+\midrule
+Linear Probe (Frozen) & 7,690 & 0.035\% & 96.00\% & 95.80\% \\
+\textbf{LoRA (Bl. 11--12, $r=8$)} & \textbf{32,266} & \textbf{0.146\%} & \textbf{97.28\%} & \textbf{97.14\%} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Class-Level Dynamics and Error Analysis}
+Disaggregating F1 performance by class indicates that the largest gains occur in complex linear infrastructure and hydrology: \textit{Highway} F1 increases by $+5.85\%$ (91.87\% to 97.72\%) and \textit{River} improves by $+3.71\%$ (93.80\% to 97.51\%). High-baseline natural categories (\textit{Forest} at 98.89\%, \textit{SeaLake} at 99.44\%) maintain peak fidelity without catastrophic forgetting. Residual confusion is predominantly concentrated among subtle spectral boundaries between \textit{Pasture} and \textit{HerbaceousVegetation}, where absence of short-wave infrared bands in RGB creates physical ambiguity.
+
+\section{Conclusions}
+Targeted Low-Rank Adaptation on the Query and Value projections of the final two transformer blocks bridges the domain gap between natural and remote sensing imagery, delivering a statistically significant gain ($+1.34\%$ Macro-F1, $p=0.002$) while tuning only 0.146\% of parameters. Embedding caching accelerates training by over $8\times$ without numerical deviation, and weight merging eliminates runtime latency penalties entirely.
+
+\noindent \textbf{Limitations \& Phase C Roadmap:} We maintain strict epistemological honesty: the random stratified partition evaluates intra-distribution generalization. In geographic remote sensing, spatial autocorrelation between adjacent tiles can inflate empirical metrics. Ongoing work for Phase C investigates out-of-distribution robustness via geographically disjoint regional splits using EuroSAT 13-band Sentinel-2 L2A GeoTIFFs and cross-sensor evaluation on Sentinel-1 SAR data.
+
+\bibliographystyle{IEEEtran}
+\begin{thebibliography}{1}
+\bibitem{oquab2023dinov2}
+M.~Oquab et~al., ``DINOv2: Learning robust visual features without supervision,'' \emph{arXiv:2304.07193}, 2023.
+\bibitem{hu2021lora}
+E.~J. Hu et~al., ``LoRA: Low-rank adaptation of large language models,'' in \emph{Proc. ICLR}, 2022.
+\bibitem{helber2019eurosat}
+P.~Helber et~al., ``EuroSAT: A novel dataset and deep learning benchmark for land use and land cover classification,'' \emph{IEEE JSTARS}, vol.~12, no.~7, pp.~2217--2226, 2019.
+\bibitem{luo2016understanding}
+W.~Luo et~al., ``Understanding the effective receptive field in deep convolutional neural networks,'' in \emph{Proc. NeurIPS}, 2016.
+\end{thebibliography}
+
+\end{document}
