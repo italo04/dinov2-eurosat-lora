@@ -1,0 +1,5 @@
+caso,archivo,real,base_pred,base_prob,lora_pred,lora_prob
+Fixed by LoRA,River_707.jpg,River,Highway,0.596,River,1.0
+Fixed by LoRA,River_1921.jpg,River,Highway,0.743,River,1.0
+Correct in both,Highway_999.jpg,Highway,Highway,1.0,Highway,1.0
+New LoRA error,PermanentCrop_2066.jpg,PermanentCrop,PermanentCrop,0.564,HerbaceousVegetation,0.996
