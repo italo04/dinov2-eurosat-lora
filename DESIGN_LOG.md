@@ -116,6 +116,8 @@ Para cada una: predicción numérica, razonamiento y criterio de rechazo. Al eje
 | 07/10 | | Propuesta E1 (ilustraciones generadas, prompts en `imagenes/prompts.json`) | |
 | 20/10 | Claude (Anthropic) | Estructura del notebook E2, implementación de `LoRALinear`, medición de FLOPs/latencia/ERF, borrador de este cuaderno | |
 | 21/10 | Claude (Anthropic) | Corrección del error de dispositivo (D16); extracción de resultados y figuras de las salidas del notebook; borrador del análisis de las secciones 2 y 3 | |
+| 28/10 | Claude (Anthropic) | Informe de avance (Word), presentación y diagrama de Gantt (`docs/`) | |
+| 18/11 | Claude (Anthropic) | Póster WAIMLAp corregido según los revisores (pipeline, diagramas, ejemplos de clasificación), celda `scripts/C1_ejemplos_prediccion.py`, abstract en LaTeX con referencias verificadas | |
 
 > Completar la última columna: qué verificó o cambió el equipo en cada caso (por ejemplo, "revisamos la fórmula de LoRA y la comprobación B = 0", "verificamos los conteos de la matriz de confusión").
 

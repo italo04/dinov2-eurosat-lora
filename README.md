@@ -27,16 +27,21 @@ Proyecto de la tarea académica final de **1INF52 Deep Learning (PUCP, 2026-2)**
 ├── E2_teardown_lora.ipynb   # notebook principal del E2
 ├── DESIGN_LOG.md            # cuaderno de decisiones (decisiones, hipótesis, resultados, uso de IA)
 ├── requirements.txt
+├── scripts/
+│   └── C1_ejemplos_prediccion.py   # celda extra: predicciones individuales + McNemar exacto pareado
+├── poster/                  # póster WAIMLAp 2026 (A0): PDF para imprimir y PPTX editable
+├── abstract/                # abstract WAIMLAp 2026 en LaTeX (.tex + figura) y PDF compilado
+├── docs/                    # informe de avance (Word) y diagrama de Gantt
 ├── splits/                  # particiones con semilla fija (se generan al ejecutar)
 ├── results/                 # tablas CSV/JSON (se generan al ejecutar)
 ├── figures/                 # figuras PNG (se generan al ejecutar)
-└── checkpoints/             # cabeza lineal y adaptadores LoRA (se generan al ejecutar; no incluidos en E2)
+└── checkpoints/             # cabeza lineal y adaptadores LoRA (se generan al ejecutar; no incluidos)
 ```
 
 ## Cómo ejecutar
 
 ### Opción recomendada: Google Colab (GPU gratuita)
-1. Abrir el notebook en Colab: `https://colab.research.google.com/github/jflxx/deep-learning/E2_teardown_lora.ipynb`
+1. Abrir el notebook en Colab: `https://colab.research.google.com/github/jflxx/deep-learning/blob/main/E2_teardown_lora.ipynb`
 2. *Entorno de ejecución → Ejecutar todo*. El notebook descarga EuroSAT RGB (~90 MB, Zenodo) y los pesos de DINOv2 (Hugging Face). Tarda ~30–60 min.
 3. Descargar las carpetas `results/`, `figures/`, `splits/` y `checkpoints/` y subirlas al repositorio.
 
@@ -53,6 +58,13 @@ Sin GPU NVIDIA, poner `MAX_POR_CLASE = 200` en la celda de configuración (subco
 - La partición se guarda en `splits/split_seed42.json` y se reutiliza en todas las ejecuciones.
 - Versiones y hardware de cada ejecución en `results/entorno.json`.
 - Todos los hiperparámetros están en la celda de configuración del notebook y en `DESIGN_LOG.md`.
+
+## Póster y abstract (WAIMLAp 2026)
+
+- **Póster:** `poster/Poster_DINOv2_EuroSAT_LoRA.pdf` (A0, para imprimir) y `.pptx` (editable). Incluye el pipeline completo, el diagrama de LoRA, los resultados de las fases A y B y predicciones individuales reales del conjunto de test.
+- **Abstract:** `abstract/Abstract_DINOv2_EuroSAT_LoRA.tex` (compilar con `pdflatex` dos veces; la figura `fig_predicciones.png` va en la misma carpeta) y el PDF compilado.
+- **Predicciones individuales:** `scripts/C1_ejemplos_prediccion.py` se pega como última celda del notebook después de *Ejecutar todo*. Genera `figures/C1_prediction_examples.png`, `results/C1_predicciones_ejemplo.csv` y `results/C1_mcnemar_exacto.json`.
+- **Nota:** el McNemar reportado (χ² = 9.56, p ≈ 0.002) es una cota conservadora (peor caso). El valor exacto con predicciones pareadas lo calcula `C1_ejemplos_prediccion.py`; falta subir `results/C1_mcnemar_exacto.json`.
 
 ## Datos y modelos (licencias)
 - **EuroSAT** — Helber, P., Bischke, B., Dengel, A., Borth, D. (2019). *EuroSAT: A Novel Dataset and Deep Learning Benchmark for Land Use and Land Cover Classification.* IEEE JSTARS 12(7), 2217–2226. [GitHub](https://github.com/phelber/EuroSAT) · [Zenodo](https://zenodo.org/records/7711810). Licencia MIT; imágenes Copernicus Sentinel-2 sujetas a sus términos de uso.
