@@ -42,6 +42,10 @@ def preparar_eurosat_rgb(data_dir: str = "data") -> str:
     return raiz
 
 
+# Alias para compatibilidad con cuadernos y scripts
+descargar_eurosat_rgb = preparar_eurosat_rgb
+
+
 def obtener_transform(img_size: int = 224) -> transforms.Compose:
     return transforms.Compose([
         transforms.Resize((img_size, img_size), interpolation=transforms.InterpolationMode.BICUBIC),

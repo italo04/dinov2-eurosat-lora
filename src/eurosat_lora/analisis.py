@@ -45,7 +45,7 @@ def tabla_semillas(df: pd.DataFrame) -> pd.DataFrame:
     )
 
 
-def tabla_mcnemar(salida: str) -> pd.DataFrame:
+def tabla_mcnemar(salida: str, df: pd.DataFrame | None = None) -> pd.DataFrame:
     """C3: McNemar exacto base vs LoRA r8 por semilla y conjunto."""
     filas = []
     for semilla in [42, 0, 1]:
@@ -131,6 +131,9 @@ def veredicto_a4(tabla_fc: pd.DataFrame) -> dict:
         "caida_media_base": float(caida_media_base),
         "caida_media_lora": float(caida_media_lora),
         "ventaja_media_fuera": ventaja_media_fuera,
+        "caida_base_media": float(caida_media_base),
+        "caida_lora_media": float(caida_media_lora),
+        "ventaja_fuera_media": ventaja_media_fuera,
         "signo_consistente": signo_consistente,
     }
 
