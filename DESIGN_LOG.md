@@ -33,6 +33,10 @@ Cada decisión indica su fundamento: evidencia propia (medición en este proyect
 | D14 | 20/10 | Latencia: calentamiento de 5 pasadas, 20 repeticiones, mediana, sincronización CUDA; batch 1/32/128, fp32 y fp16 | Una sola medición; media en lugar de mediana | Las operaciones CUDA son asíncronas: sin `synchronize` se mediría solo el lanzamiento de kernels. Las primeras pasadas incluyen inicialización. La mediana es robusta a valores atípicos (interrupciones del sistema). Tres tamaños de batch para separar la latencia (batch 1) del throughput (batch grande) | — | |
 | D15 | 20/10 | Entorno: **Google Colab con GPU Tesla T4** (torch 2.11, transformers 5.20.1) | GPU local AMD RX 580 | PyTorch requiere CUDA (NVIDIA) o ROCm (AMD en Linux); la RX 580 (arquitectura Polaris) ya no está soportada por ROCm. Colab es gratuito y deja el entorno documentado en `results/entorno.json` | — | |
 | D16 | 21/10 | Corrección: los parámetros A y B de LoRA se crean en el **mismo dispositivo y tipo de dato** que W | — | **Evidencia:** `RuntimeError` de dispositivo al ejecutar en GPU. La primera prueba del notebook se hizo solo en CPU, por eso no apareció antes. No cambia la metodología | Corregido con asistencia de IA | |
+| D17 | 24/11 | Partición **geográfica por bloques espaciales** (K-means K=12 en EPSG:3035 con restricción de ≥5% de cada clase en cada partición, respaldo determinista [(12,0.05), (15,0.05), (20,0.05), (20,0.03)], test dentro y test fuera disjuntos) | Buffer circular, partición por tiles de Sentinel-2, K-means lat/lon sin proyectar | Proyección conforme EPSG:3035 preserva distancias euclidianas en Europa. Bloques espaciales evitan fuga de información espacial entre parches contiguos. Restricción 5% asegura presencia de las 10 clases en train, val y tests. Orden de respaldo fijo elimina arbitrariedades | Asistencia de IA en diseño de fallback; revisado por el equipo | |
+| D18 | 24/11 | Arquitectura modular con paquete `src/eurosat_lora` editable y notebook E3 delgado | Código monolítico en un único notebook (estilo E2) | Facilita pruebas unitarias automáticas con pytest en CPU local antes de subir a Colab; notebook E3 solo orquesta llamadas, evitando estado global y celdas desordenadas | Código modular estructurado con asistencia de IA; revisado por el equipo | |
+| D19 | 24/11 | Corridas **idempotentes** con guardado atómico de `metricas.json` y checkpoints por corrida en Drive | Guardar solo al final del notebook o en memoria | Permite reanudar experimentos interrumpidos por desconexiones de Colab sin reentrenar lo ya computado; atomic replace evita archivos corruptos por desconexión a mitad de escritura | Implementado con asistencia de IA; revisado por el equipo | |
+| D20 | 24/11 | Matriz simétrica de ablaciones (r4/r16, 4 bloques 8–11, solo Q) en ambas particiones (interna y geográfica) | Evaluar ablaciones solo en partición interna | Permite responder si el impacto del rango, la profundidad y las proyecciones se mantiene invariante ante un domain shift geográfico severo (test fuera) o si la capacidad del adaptador interactúa con la generalización espacial | Propuesto por el equipo con asistencia de IA | |
 
 ---
 
@@ -86,6 +90,29 @@ Para cada una: predicción numérica, razonamiento y criterio de rechazo. Al eje
 | A2 | Repetir A1 con 3 semillas (42, 0, 1) | Δ macro-F1 (LoRA − base) = **+1.0 a +1.6 pts** en las 3 semillas; desviación estándar de Δ ≤ 0.3 pts | Con 4,050 imágenes de test el error estándar del macro-F1 es ~0.3 pts; la mejora de A1 (+1.33) es ~4 veces eso, así que debería repetirse | Alguna semilla da Δ ≤ 0, o la desviación > 0.5 pts | |
 | A3 | Rango de LoRA: r = 4 y r = 16 (α = r, resto igual) | Ambos dentro de **±0.3 pts** del macro-F1 de r = 8 | [3] reporta que rangos bajos ya capturan la adaptación y que subir el rango da rendimientos decrecientes | r = 16 supera a r = 8 por más de 0.5 pts, o r = 4 queda más de 0.5 pts por debajo | |
 | A4 | Fase C: evaluar ambas condiciones en regiones geográficas reservadas | Caída del macro-F1 (interno − geográfico) de **3 a 10 pts** en ambas; la ventaja de LoRA se **reduce a ≤ +0.5 pts** o se invierte | El cambio de región altera textura y color de cultivos y vegetación; las clases de vegetación ya son las más confundidas en A1, y la pérdida de entrenamiento de LoRA llega a ~0.0003 (se ajusta mucho a la distribución interna) | La caída es < 1 pt (no hay shift real) o LoRA mantiene ≥ +1.3 pts | |
+| A5 | Bloques LoRA: 4 últimos bloques (8–11) vs 2 últimos (10–11) en partición interna | macro-F1 dentro de **+0.1 a +0.5 pts** superior a r8 en bloques 10–11 | [5] indica que capas profundas son más específicas, pero adaptar 4 bloques da mayor capacidad sin exceder el presupuesto (49,152 params) | macro-F1 empeora respecto a 2 bloques por > 0.3 pts o sube > 0.8 pts | |
+| A6 | Proyecciones LoRA: solo Q vs Q+V en bloques 10–11 en partición interna | macro-F1 cae de **0.2 a 0.6 pts** respecto a Q+V | [3] encontró que adaptar W_q y W_v juntos rinde mejor que solo W_q con igual rango | solo Q supera a Q+V o cae más de 1.0 pt | |
+| A3g | Rango de LoRA (r=4, r=16) en partición geográfica | Test dentro: dentro de **±0.3 pts** de r=8. Test fuera: caída geográfica similar a r=8 (3 a 10 pts) | [3] rangos bajos saturan la adaptación; subir rango no previene desajuste ante cambio de distribución | r=16 reduce la caída geográfica en > 1.5 pts frente a r=8 | |
+| A5g | Bloques LoRA (8–11) en partición geográfica | Test dentro: +0.1 a +0.4 pts. Test fuera: **mayor caída geográfica (0.5 a 1.5 pts más de caída)** que con 2 bloques | Adaptar bloques más tempranos altera features genéricas que transfieren mejor congeladas [5] | 4 bloques cae menos que 2 bloques por > 0.5 pts | |
+| A6g | Proyecciones LoRA (solo Q) en partición geográfica | Test dentro: −0.2 a −0.5 pts. Test fuera: **caída similar o ligeramente menor** (0.2 a 0.5 pts menor caída) que Q+V | Menor capacidad específica reduce sobreajuste a las regiones de entrenamiento [3] | En test fuera, solo Q cae > 1.5 pts por debajo de base | |
+
+### Regla de decisión de A4 (fijada el 24/11/2026, ANTES de ejecutar la Fase C)
+
+Por semilla (42, 0, 1) y condición:
+- $\text{caída} = \text{macro-F1}(\text{test dentro}) - \text{macro-F1}(\text{test fuera})$
+- $\text{ventaja LoRA} = \text{macro-F1}(\text{LoRA}) - \text{macro-F1}(\text{base})$, dentro y fuera.
+
+Veredicto con la **media de las 3 semillas**:
+
+| Veredicto | Condición |
+|---|---|
+| **Se cumple A4** | Caída media de 3 a 10 pts en ambas condiciones **y** ventaja media de LoRA fuera $\le$ +0.5 pts (o negativa) |
+| **Se rechaza A4** | Caída media < 1 pt en alguna condición **o** ventaja media de LoRA fuera $\ge$ +1.3 pts |
+| **Intermedio** | Cualquier otro caso; se reporta tal cual |
+
+- Se afirma "LoRA mejor/peor fuera" solo si las 3 semillas tienen el mismo signo; si no, "sin diferencia consistente".
+- McNemar exacto por semilla (dentro y fuera) se reporta como apoyo; no entra en el veredicto.
+- Se reportan media ± desviación estándar de caída y ventaja.
 
 ---
 
@@ -116,6 +143,10 @@ Para cada una: predicción numérica, razonamiento y criterio de rechazo. Al eje
 | 07/10 | | Propuesta E1 (ilustraciones generadas, prompts en `imagenes/prompts.json`) | |
 | 20/10 | Claude (Anthropic) | Estructura del notebook E2, implementación de `LoRALinear`, medición de FLOPs/latencia/ERF, borrador de este cuaderno | |
 | 21/10 | Claude (Anthropic) | Corrección del error de dispositivo (D16); extracción de resultados y figuras de las salidas del notebook; borrador del análisis de las secciones 2 y 3 | |
+| 28/10 | Claude (Anthropic) | Informe de avance (Word), presentación y diagrama de Gantt (`docs/`) | |
+| 18/11 | Claude (Anthropic) | Póster WAIMLAp corregido según los revisores (pipeline, diagramas, ejemplos de clasificación), celda `scripts/C1_ejemplos_prediccion.py`, abstract en LaTeX con referencias verificadas | |
+| 24/11 | Claude / Antigravity | Diseño y especificación del plan E3: generalización de LoRA, partición geográfica por bloques espaciales (K-means EPSG:3035), matriz simétrica de 20 experimentos, suite de pruebas unitarias y script de humo | |
+| 25/11 | Claude / Antigravity | Implementación modular del paquete `eurosat_lora`, corrección de determinismo en tests, resolución de compatibilidad transformers 5.x y verificación de los 36 tests unitarios en CPU | |
 
 > Completar la última columna: qué verificó o cambió el equipo en cada caso (por ejemplo, "revisamos la fórmula de LoRA y la comprobación B = 0", "verificamos los conteos de la matriz de confusión").
 
