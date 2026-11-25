@@ -1,3 +1,5 @@
+# Probado con Python 3.10+ (Colab). Fijar versiones exactas tras la primera ejecución con:
+#   pip freeze > requirements-lock.txt
 torch>=2.1
 torchvision>=0.16
 transformers>=4.40
